@@ -22,7 +22,7 @@ export function subscribeSpy(subject: any, subscribableOrName: string | Subscrib
 
     if (typeof subscribableOrName === 'string') {
         name = subscribableOrName;
-        subscribable = (<any> subject)[name];
+        subscribable = subject[name];
     } else if (subscribableOrName && typeof subscribableOrName.subscribe === 'function') {
         subscribable = subscribableOrName;
         for (let k in subject) {
