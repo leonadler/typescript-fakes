@@ -1,1 +1,1 @@
-export * from './spies/event-target.spy';
+export * from './dom/event-target.spy';
