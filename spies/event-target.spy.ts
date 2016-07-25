@@ -1,3 +1,12 @@
+/**
+ * A spy class that can be used in place of a "real" EventTarget to trigger event handlers
+ * without having to construct real DOM events.
+ *
+ * @example
+ *   let element = new SpyEventTarget();
+ *   createWidgetThatUses(element);
+ *   element.triggerListeners('click', {button: 1});
+ */
 export default class SpyEventTarget implements EventTarget {
 
     listeners: { type: string, listener: any, useCapture: boolean }[] = [];
@@ -34,19 +43,19 @@ export default class SpyEventTarget implements EventTarget {
             defaultPrevented: false,
             preventDefault(): void { this.defaultPrevented = true; },
             stopPropagation(): void {},
+            immediatePropagationStopped: false,
             stopImmediatePropagation(): void { this.immediatePropagationStopped = true; }
         }, data);
 
         // Run capture & bubbling phase
         let lastResult: boolean = true;
-        [true, false].forEach(phase => {
-            this.listeners.filter(l => l.useCapture === phase && l.type === type).forEach(l => {
-                let result = lastResult = l.listener.call(this, eventData);
-                if (result === false || eventData.immediatePropagationStopped) {
-                    return false;
-                }
+        this.listeners
+            .filter(listener => listener.type === type)
+            .sort((a, b) => (+b.useCapture) - (+a.useCapture))
+            .forEach(l => {
+                lastResult = l.listener.call(this, eventData);
+                return !eventData.immediatePropagationStopped && lastResult !== false;
             });
-        });
 
         return lastResult;
     }
